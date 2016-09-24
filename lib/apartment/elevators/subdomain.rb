@@ -19,13 +19,23 @@ module Apartment
 
         # If the domain acquired is set to be excluded, set the tenant to whatever is currently
         # next in line in the schema search path.
-        tenant = if self.class.excluded_subdomains.include?(request_subdomain)
+        tenant = if excluded_subdomain?(request_subdomain)
           nil
         else
           request_subdomain
         end
 
         tenant.presence
+      end
+
+      def excluded_subdomain?(subdomain)
+        self.class.excluded_subdomains.any? do |excluded_subdomain|
+          if excluded_subdomain.is_a? Regexp
+            subdomain =~ excluded_subdomain
+          else
+            subdomain == excluded_subdomain
+          end
+        end
       end
 
     protected
